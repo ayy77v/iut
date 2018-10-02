@@ -1,0 +1,281 @@
+<!-- <%= image_tag( @resume.attachment_url) %> -->
+<% require "google/cloud/vision" 
+%>
+<% require "google/cloud/language" 
+ %>
+<%
+language = Google::Cloud::Language.new %>
+
+<% #require 'ocr_space' 
+#resource = OcrSpace::Resource.new(apikey: "d27373a53188957")
+%>
+
+<% #result = resource.clean_convert url: @resume.attachment_url %>
+
+<%
+
+
+
+vision = Google::Cloud::Vision.new project: 'api-test-210607'
+image  = vision.image @resume.attachment_url 
+%>
+
+<%
+text = image.text.to_s
+#text = result
+
+response = language.analyze_syntax content: text, type: :PLAIN_TEXT
+sentences = response.sentences
+tokens    = response.tokens
+%>
+
+
+
+
+
+<% #VERB, NOUN, X, NUM, ADP, ADJ %>
+
+<% 
+x= tokens.count
+
+asy = Array.new(x-1)
+bsy = Array.new(x-1) 
+
+noun = Array.new(x-1,0)
+
+
+
+
+Array.new(x) { rand(0...1) }
+
+#
+snn = tokens.select { |t| t.part_of_speech.tag.to_s == 'NOUN' }.count 
+
+nn= (snn*(0.25)).ceil
+nx = snn-nn
+
+nn1 = Array.new(nn, 1)
+
+nn2 = Array.new(nx, 0)
+
+ncc = (nn1+nn2).shuffle
+
+
+#
+svv = tokens.select { |t| t.part_of_speech.tag.to_s == 'VERB' }.count
+
+vv= (svv*(0.2)).ceil
+
+vx = svv- vv
+
+vv1 = Array.new(vv, 1)
+
+vv2 = Array.new(vx, 0)
+
+vcc = (vv1+ vv2).shuffle
+
+
+#
+saaj = tokens.select { |t| t.part_of_speech.tag.to_s == 'ADJ' }.count 
+
+aaj = (saaj*(0.1)).ceil
+
+ajx = saaj- aaj
+
+aj1 = Array.new(aaj, 1)
+
+aj2 = Array.new(ajx, 0)
+
+ajc = (aj1+aj2).shuffle
+
+
+#
+saap = tokens.select { |t| t.part_of_speech.tag.to_s == 'ADP' }.count 
+
+aap = (saap*(0.1)).ceil
+
+apx = saap- aap
+
+ap1 = Array.new(aap, 1)
+
+ap2 = Array.new(apx, 0)
+
+apc = (ap1+ap2).shuffle
+
+
+#
+sxxx = tokens.select { |t| t.part_of_speech.tag.to_s == 'X' }.count 
+
+xxx = (sxxx*(0.1)).ceil
+
+xtx = sxxx-xxx
+
+xx1 = Array.new(xxx, 1)
+
+xx2 = Array.new(xtx, 0)
+
+xxc = (xx1+xx2).shuffle
+
+#
+snnm = tokens.select { |t| t.part_of_speech.tag.to_s == 'NUM' }.count 
+
+nnm = (snnm*(0.1)).ceil
+
+nmx = snnm- nnm
+
+nm1 = Array.new(nnm, 1)
+
+nm2 = Array.new(nmx, 0)
+
+nmc = (nm1 + nm2).shuffle
+
+#
+nk = 0
+vk = 0
+ajk = 0
+apk = 0
+xk = 0
+nmk = 0;
+
+
+
+
+for i in 1..x
+	asy[i-1] = tokens[i-1].part_of_speech.tag.to_s
+	bsy[i-1] = tokens[i-1].text.content
+end
+for i in 1..x
+	if  asy[i-1] == 'NOUN'
+		if ncc[nk] == 1 
+	
+		noun[i-1] = 1
+    	nk = nk+1
+	else 
+		nk = nk+1
+	end
+
+
+
+elsif asy[i-1] == 'VERB'
+	if   vcc[vk] == 1
+		noun[i-1] =2
+		vk = vk+1
+	else
+		vk=vk+1
+	end
+
+elsif	asy[i-1] == 'ADJ' 
+
+	if ajc[ajk] == 1 
+		noun[i-1] = 3
+		ajk = ajk+1
+	else 
+		ajk = ajk+1
+	end
+
+elsif asy[i-1] == 'ADP' 
+	if apc[apk] == 1
+		noun[i-1] =4
+		apk = apk+1
+	else
+		apk = apk+1
+	end
+
+elsif asy[i-1] == 'X' 
+	if xxc[xk] == 1
+		noun[i-1] = 5
+		xk = xk+1
+	else
+		xk = xk+1
+	end
+
+elsif asy[i-1] == 'NUM' 
+	if nmc[nmk] == 1
+		noun[i-1] = 6
+		nmk=nmk+1
+	else
+		nmk=nmk+1
+	end
+
+	elsif asy[i-1] == 'PUNCT'
+	 noun[i-1] = 9
+	
+		
+	end
+end
+%>
+
+
+
+<% 
+
+#tokens.each do |token|
+  #puts "Word: #{token.part_of_speech.tag} #{token.text.content}"
+#end
+
+%>
+
+  <table class="table table-hover">
+  	<td>
+<% for i in 1..x %>
+
+<%if noun[i-1] ==0 %>
+<div id= <%= i-1%> style="display: inline" > <%= bsy[i-1] %>  </div>
+
+<% elsif noun[i-1] ==9%>
+
+</td>
+<tr>
+	<td>
+
+
+
+
+<% elsif noun[i-1] == 1 or noun[i-1] == 2 or noun[i-1] == 3 or noun[i-1] == 4  or noun[i-1] == 5 or noun[i-1] == 6 %>
+
+<div id= <%= i-1%>  style="display: inline" >  <button type="button" class="btn btn-danger" onclick="myFunction(this)" id= <%= i-1%> >Danger</button> </div>
+
+
+
+
+<%	end%>
+<% end%>
+</td>
+</table>
+
+
+
+<%#
+
+for i on 1..x
+ if asy[i-1] == Noun or asy[i-1] ==
+
+     
+ %>   
+ 
+
+
+
+
+<script>
+
+
+function myFunction(myObj) {
+
+//alert(myObj.id)
+idx = myObj.id;
+
+
+var jrsarray = <%= bsy.inspect.html_safe %>; 
+
+
+
+
+
+ document.getElementById(idx).innerHTML = jrsarray[idx]
+	
+
+  }
+
+
+</script>
